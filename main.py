@@ -4,8 +4,8 @@ from urllib.parse import urlparse
 
 app = FastAPI(
     title="Smart Dark Mode Generator API",
-    description="API to generate bulletproof dark mode CSS compatible with YouTube and media players.",
-    version="1.3.0"
+    description="API to generate zero-conflict dark mode CSS for video sites like YouTube.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -16,39 +16,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Bulletproof Dark CSS - Zero Video Interference
+# Zero-Conflict Dark CSS (Strictly Excludes Video Players & Shadow DOM Trees)
 SMART_DARK_CSS = """
-/* 1. Global background tint without affecting video overlays */
-html {
+/* 1. Global Page Background & Default Text */
+html, body {
     background-color: #0f0f0f !important;
+    color: #f1f1f1 !important;
 }
 
-/* 2. Target text and background directly on structural components */
-body, header, nav, footer, main, article, section, aside, div, p, span, a, li, td, th, h1, h2, h3, h4, h5, h6 {
+/* 2. Color structural containers EXCEPT anything inside a video player or YouTube player */
+body *:not(video):not(iframe):not(canvas):not(svg):not(path):not(img):not(.html5-video-player):not(.html5-main-video):not(.video-stream):not(#movie_player):not([class*="player"]):not([id*="player"]):not([class*="ytp-"]) {
     background-color: #0f0f0f !important;
     color: #f1f1f1 !important;
     border-color: #272727 !important;
 }
 
-/* 3. Link color optimization */
+/* 3. Readable Link Color */
 a, a * {
     color: #3ea6ff !important;
 }
 
-/* 4. Complete exclusion for videos, thumbnails, and media containers */
-video, iframe, canvas, svg, img,
-.html5-video-player, .html5-main-video, .video-stream,
-[class*="player"], [id*="player"], [class*="video"], [id*="video"] {
-    background-color: transparent !important;
-    filter: none !important;
-    mix-blend-mode: normal !important;
-}
-
-/* 5. Inputs & Buttons */
+/* 4. Form inputs */
 input, textarea, select, button {
     background-color: #212121 !important;
     color: #ffffff !important;
     border: 1px solid #3d3d3d !important;
+}
+
+/* 5. Force absolute neutrality on ALL video elements and YouTube overlays */
+video, 
+iframe, 
+canvas, 
+svg, 
+img,
+.html5-video-player, 
+.html5-video-player *, 
+#movie_player, 
+#movie_player *,
+.video-stream,
+[class*="ytp-"] {
+    background-color: transparent !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
 }
 """
 
@@ -60,6 +70,6 @@ def get_dark_css(url: str = Query(..., description="Target website URL")):
     return {
         "status": "success",
         "domain": domain,
-        "mode": "bulletproof_media_dark",
+        "mode": "zero_conflict_dark",
         "css": SMART_DARK_CSS.strip()
     }
